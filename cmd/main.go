@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/ahanafy/oidcgo/pkg/oauth2dev"
 	"github.com/coreos/go-oidc/v3/oidc"
 	"golang.org/x/oauth2"
 )
