@@ -40,8 +40,9 @@ type Config struct {
 // such a response failed.
 type tokenOrError struct {
 	*oauth2.Token
-	Error     string `json:"error,omitempty"`
-	ExpiresIn int64  `json:"expires_in"`
+	Error            string `json:"error,omitempty"`
+	ErrorDescription string `json:"error_description,omitempty"`
+	ExpiresIn        int64  `json:"expires_in"`
 }
 
 var (
@@ -87,20 +88,20 @@ func RequestDeviceCode(client *http.Client, config *Config) (*DeviceCode, error)
 // user explicitly denying access, the error is ErrAccessDenied.
 func WaitForDeviceAuthorization(client *http.Client, config *Config, code *DeviceCode) (*oauth2.Token, error) {
 	for {
-
 		resp, err := client.PostForm(config.Endpoint.TokenURL,
 			url.Values{
 				"client_secret": {config.ClientSecret},
 				"client_id":     {config.ClientID},
-				"code":          {code.DeviceCode},
+				"device_code":   {code.DeviceCode},
 				"grant_type":    {deviceGrantType}})
 		if err != nil {
 			return nil, err
 		}
-		if resp.StatusCode == http.StatusBadRequest {
+		if resp.StatusCode == http.StatusPreconditionRequired {
 			time.Sleep(time.Duration(code.Interval) * time.Second)
 			continue
-		} else if resp.StatusCode != http.StatusOK {
+
+		} else if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusBadRequest {
 			return nil, fmt.Errorf("HTTP error %v (%v) when polling for OAuth token",
 				resp.StatusCode, http.StatusText(resp.StatusCode))
 		}
@@ -111,8 +112,11 @@ func WaitForDeviceAuthorization(client *http.Client, config *Config, code *Devic
 		if err := dec.Decode(&token); err != nil {
 			return nil, err
 		}
-		if token.Expiry.IsZero() && token.ExpiresIn != 0 {
-			token.Expiry = time.Now().Add(time.Duration(token.ExpiresIn * int64(time.Second)))
+
+		if resp.StatusCode != http.StatusBadRequest {
+			if token.Expiry.IsZero() && token.ExpiresIn != 0 {
+				token.Expiry = time.Now().Add(time.Duration(token.ExpiresIn * int64(time.Second)))
+			}
 		}
 
 		switch token.Error {
