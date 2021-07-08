@@ -90,7 +90,6 @@ func WaitForDeviceAuthorization(client *http.Client, config *Config, code *Devic
 	for {
 		resp, err := client.PostForm(config.Endpoint.TokenURL,
 			url.Values{
-				"client_secret": {config.ClientSecret},
 				"client_id":     {config.ClientID},
 				"device_code":   {code.DeviceCode},
 				"grant_type":    {deviceGrantType}})
