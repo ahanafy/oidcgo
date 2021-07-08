@@ -37,7 +37,7 @@ func main() {
 	var clientDeviceOAuthConfig = &oauth2dev.Config{
 		Config: clientOAuthConfig,
 		DeviceEndpoint: oauth2dev.DeviceEndpoint{
-			CodeURL: providerURL + "/protocol/openid-connect/auth/device",
+			CodeURL: provider.Endpoint().AuthURL + "/device",
 		},
 	}
 
