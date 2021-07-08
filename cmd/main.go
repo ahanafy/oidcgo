@@ -49,9 +49,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Print(dcr.VerificationURL)
-	dcr.VerificationURL = providerURL + "/device?user_code=" + dcr.UserCode
-	fmt.Printf("Visit: %v\n", dcr.VerificationURL)
+	fmt.Printf("Visit: %v\n", dcr.VerificationURLComplete)
 
 	// Wait for a token. It will be a standard oauth2.Token.
 	accessToken, err := oauth2dev.WaitForDeviceAuthorization(client,

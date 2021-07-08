@@ -16,11 +16,12 @@ import (
 // device-visible code used to allow for user authorisation of this app. The
 // app should show UserCode and VerificationURL to the user.
 type DeviceCode struct {
-	DeviceCode      string `json:"device_code"`
-	UserCode        string `json:"user_code"`
-	VerificationURL string `json:"verification_url"`
-	ExpiresIn       int64  `json:"expires_in"`
-	Interval        int64  `json:"interval"`
+	DeviceCode              string `json:"device_code"`
+	UserCode                string `json:"user_code"`
+	VerificationURL         string `json:"verification_uri"`
+	VerificationURLComplete string `json:"verification_uri_complete"`
+	ExpiresIn               int64  `json:"expires_in"`
+	Interval                int64  `json:"interval"`
 }
 
 // DeviceEndpoint contains the URLs required to initiate the OAuth2.0 flow for a
@@ -50,7 +51,7 @@ var (
 )
 
 const (
-	deviceGrantType = "http://oauth.net/grant_type/device/1.0"
+	deviceGrantType = "urn:ietf:params:oauth:grant-type:device_code"
 )
 
 // RequestDeviceCode will initiate the OAuth2 device authorization flow. It
@@ -96,7 +97,7 @@ func WaitForDeviceAuthorization(client *http.Client, config *Config, code *Devic
 		if err != nil {
 			return nil, err
 		}
-		if resp.StatusCode == http.StatusPreconditionRequired {
+		if resp.StatusCode == http.StatusBadRequest {
 			time.Sleep(time.Duration(code.Interval) * time.Second)
 			continue
 		} else if resp.StatusCode != http.StatusOK {
